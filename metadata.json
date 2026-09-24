@@ -1,0 +1,6 @@
+{
+  "name": "Norto ENEM",
+  "description": "Plataforma digital de preparação para o ENEM - Estude. Pratique. Evolua.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

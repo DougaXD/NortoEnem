@@ -1,0 +1,199 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (
+          request.auth.token.role == 'admin' ||
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+          (request.auth.token.email_verified == true && request.auth.token.email == 'ds999501417@gmail.com')
+        );
+    }
+
+    // Coleção exclusiva de Administradores: somente administradores reais podem ler lista ou escrever
+    match /admins/{adminId} {
+      allow get: if isAuthenticated() && (request.auth.uid == adminId || isAdmin());
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Coleção central de Usuários: auto-promoção estritamente bloqueada (role inicial DEVE ser student)
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == userId &&
+                    request.resource.data.role == 'student';
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        (isOwner(userId) && request.resource.data.role == resource.data.role)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Perfil do Estudante
+    match /studentProfiles/{profileId} {
+      allow read: if isOwner(profileId) || isAdmin();
+      allow create, update: if isOwner(profileId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Gamificação e Progresso do Usuário
+    match /userGamification/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Repositório Global de Questões: Alunos autenticados só leem publicadas; apenas administradores criam ou alteram
+    match /questions/{questionId} {
+      allow get: if isAuthenticated() && (isAdmin() || resource == null || resource.data.status == 'published');
+      allow list: if isAuthenticated() && (isAdmin() || resource.data.status == 'published');
+      allow write: if isAdmin();
+    }
+
+    // Tentativas individuais de Questões
+    match /questionAttempts/{attemptId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Sessões de Prática do Estudante
+    match /practiceSessions/{sessionId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // Questões Favoritadas pelo Estudante (idempotente: fav_{userId}_{questionId})
+    match /userFavorites/{favoriteId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // Estado de Revisão de Questões do Caderno de Erros (review_{userId}_{questionId})
+    match /userQuestionReviews/{reviewId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // Diagnósticos e Avaliações de Domínio Inicial
+    match /diagnosticAttempts/{attemptId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // Desempenho do Estudante por Área de Conhecimento
+    match /userPerformanceAreas/{docId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // Desempenho do Estudante por Assunto / Tópico
+    match /userPerformanceTopics/{docId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // Snapshots Históricos de Desempenho
+    match /performanceSnapshots/{snapshotId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Planos de Estudo do Estudante
+    match /studyPlans/{planId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // Tarefas e Planner do Usuário
+    match /tasks/{taskId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // Simulados Oficiais e Customizados do ENEM
+    match /simulations/{simId} {
+      allow get: if isAuthenticated() && (isAdmin() || resource == null || resource.data.status == 'published');
+      allow list: if isAuthenticated() && (isAdmin() || resource.data.status == 'published');
+      allow write: if isAdmin();
+    }
+
+    // Sessões de Simulado do Estudante
+    match /simulationSessions/{sessionId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        (resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid)
+      );
+      allow delete: if isAdmin();
+
+      // Subcoleção de Respostas Individuais da Sessão (simulationSessions/{sessionId}/answers/{questionId})
+      match /answers/{questionId} {
+        allow read: if isAuthenticated() && (
+          isAdmin() ||
+          get(/databases/$(database)/documents/simulationSessions/$(sessionId)).data.userId == request.auth.uid
+        );
+        allow create, update: if isAuthenticated() && (
+          isAdmin() ||
+          (
+            get(/databases/$(database)/documents/simulationSessions/$(sessionId)).data.userId == request.auth.uid &&
+            get(/databases/$(database)/documents/simulationSessions/$(sessionId)).data.status == 'in_progress'
+          )
+        );
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Resultados Consolidados de Simulados
+    match /simulationResults/{resultId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        (resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Gabarito Restrito e Resoluções Protegidas (acesso exclusivo administrativo / backend seguro)
+    match /questionAnswerKeys/{questionId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /simulationAttempts/{attemptId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /essaySubmissions/{essayId} {
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+  }
+}

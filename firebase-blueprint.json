@@ -1,0 +1,344 @@
+{
+  "entities": [
+    {
+      "name": "User",
+      "collection": "users",
+      "description": "Conta central de usuário da plataforma com perfil base e controle de papéis",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID do usuário (Firebase Auth UID)"},
+        {"name": "displayName", "type": "string", "description": "Nome de exibição"},
+        {"name": "email", "type": "string", "description": "E-mail cadastrado"},
+        {"name": "photoURL", "type": "string", "description": "URL da foto de avatar"},
+        {"name": "role", "type": "string", "description": "Papel do usuário: student, admin, editor, reviewer, support"},
+        {"name": "status", "type": "string", "description": "Status da conta: active, suspended, pending"},
+        {"name": "entitlements", "type": "array", "description": "Produtos com acesso concedido (ex: ['enem', 'concursos'])"},
+        {"name": "createdAt", "type": "string", "description": "Data de criação ISO"},
+        {"name": "updatedAt", "type": "string", "description": "Data da última atualização ISO"},
+        {"name": "lastLoginAt", "type": "string", "description": "Data do último login ISO"}
+      ]
+    },
+    {
+      "name": "StudentProfile",
+      "collection": "studentProfiles",
+      "description": "Perfil acadêmico e objetivos do estudante",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID do perfil do estudante (vinculado ao UID)"},
+        {"name": "userId", "type": "string", "description": "UID do usuário"},
+        {"name": "name", "type": "string", "description": "Nome completo do estudante"},
+        {"name": "schoolYear", "type": "string", "description": "Ano escolar / estágio: 1ano, 2ano, 3ano, cursinho, graduado"},
+        {"name": "targetExam", "type": "string", "description": "Exame foco: enem"},
+        {"name": "goal", "type": "string", "description": "Curso ou pontuação meta (ex: Medicina - 800+)"},
+        {"name": "dailyStudyMinutes", "type": "number", "description": "Meta diária de estudos em minutos"},
+        {"name": "preferredStudyTimes", "type": "array", "description": "Turnos preferidos: ['morning', 'afternoon', 'night']"},
+        {"name": "weakAreas", "type": "array", "description": "Áreas com maior dificuldade declarada"},
+        {"name": "strongAreas", "type": "array", "description": "Áreas de maior domínio declaradas"},
+        {"name": "studyPreferences", "type": "object", "description": "Preferências pedagógicas de estudo"},
+        {"name": "onboardingCompleted", "type": "boolean", "description": "Indica se completou o onboarding inicial"},
+        {"name": "diagnosticCompleted", "type": "boolean", "description": "Indica se completou a prova diagnóstica"},
+        {"name": "timezone", "type": "string", "description": "Fuso horário do estudante"},
+        {"name": "updatedAt", "type": "string", "description": "Data de atualização ISO"}
+      ]
+    },
+    {
+      "name": "Question",
+      "collection": "questions",
+      "description": "Repositório global de questões de provas e bancos pedagógicos",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID da questão"},
+        {"name": "productId", "type": "string", "description": "Produto associado: enem"},
+        {"name": "areaId", "type": "string", "description": "ID da área do conhecimento (CH, CN, LC, MT)"},
+        {"name": "knowledgeArea", "type": "string", "description": "Área do conhecimento (retrocompatibilidade)"},
+        {"name": "subjectId", "type": "string", "description": "ID canônico da disciplina na taxonomia"},
+        {"name": "subject", "type": "string", "description": "Disciplina legível"},
+        {"name": "topicId", "type": "string", "description": "ID canônico do assunto na taxonomia"},
+        {"name": "topic", "type": "string", "description": "Assunto ou tópico legível"},
+        {"name": "competencyId", "type": "string", "description": "ID da competência (opcional)"},
+        {"name": "skillId", "type": "string", "description": "ID da habilidade (opcional)"},
+        {"name": "statement", "type": "string", "description": "Enunciado e texto de apoio"},
+        {"name": "options", "type": "array", "description": "Alternativas da questão"},
+        {"name": "correctOptionId", "type": "string", "description": "Identificador da alternativa correta"},
+        {"name": "explanation", "type": "string", "description": "Resolução comentada pedagógica"},
+        {"name": "difficulty", "type": "string", "description": "Nível de dificuldade: easy, medium, hard"},
+        {"name": "status", "type": "string", "description": "Status da questão: draft, published, archived"},
+        {"name": "source", "type": "string", "description": "Fonte ou identificador de autoria: demo"},
+        {"name": "version", "type": "number", "description": "Versão do conteúdo da questão"},
+        {"name": "createdAt", "type": "string", "description": "Data de criação ISO"},
+        {"name": "updatedAt", "type": "string", "description": "Data de atualização ISO"}
+      ]
+    },
+    {
+      "name": "QuestionAttempt",
+      "collection": "questionAttempts",
+      "description": "Tentativas individuais de resolução de questões pelos estudantes (dado segregado)",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID da tentativa"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "questionId", "type": "string", "description": "ID da questão respondida"},
+        {"name": "selectedOptionId", "type": "string", "description": "Opção selecionada pelo estudante"},
+        {"name": "isCorrect", "type": "boolean", "description": "Se acertou ou errou"},
+        {"name": "timeSpentSeconds", "type": "number", "description": "Tempo gasto na questão"},
+        {"name": "knowledgeArea", "type": "string", "description": "Área de conhecimento para agregações"},
+        {"name": "attemptedAt", "type": "string", "description": "Timestamp ISO da tentativa"}
+      ]
+    },
+    {
+      "name": "PracticeSession",
+      "collection": "practiceSessions",
+      "description": "Sessões interativas de prática e resolução guiada de questões",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID único da sessão"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "mode", "type": "string", "description": "practice"},
+        {"name": "questionIds", "type": "array", "description": "Lista ordenada de IDs das questões na sessão"},
+        {"name": "currentIndex", "type": "number", "description": "Índice da questão em resolução"},
+        {"name": "startedAt", "type": "string", "description": "Timestamp ISO de início"},
+        {"name": "completedAt", "type": "string", "description": "Timestamp ISO de conclusão"},
+        {"name": "status", "type": "string", "description": "not_started, in_progress, completed, abandoned"},
+        {"name": "answers", "type": "object", "description": "Mapa de respostas por questão com métricas de tempo e acerto"},
+        {"name": "totalQuestions", "type": "number", "description": "Total de questões na sessão"},
+        {"name": "correctCount", "type": "number", "description": "Total de acertos computados"},
+        {"name": "incorrectCount", "type": "number", "description": "Total de erros computados"},
+        {"name": "accuracy", "type": "number", "description": "Percentual de acerto (0 a 100)"},
+        {"name": "totalTimeSpentSeconds", "type": "number", "description": "Tempo total gasto em segundos"}
+      ]
+    },
+    {
+      "name": "UserGamification",
+      "collection": "userGamification",
+      "description": "Estado de gamificação e engajamento do estudante",
+      "fields": [
+        {"name": "id", "type": "string", "description": "UID do estudante"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "totalXp", "type": "number", "description": "Total acumulado de XP"},
+        {"name": "level", "type": "number", "description": "Nível alcançado"},
+        {"name": "currentStreak", "type": "number", "description": "Dias consecutivos de estudo atuais"},
+        {"name": "longestStreak", "type": "number", "description": "Maior sequência já alcançada"},
+        {"name": "lastActivityDate", "type": "string", "description": "Data YYYY-MM-DD do último estudo"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO de atualização"}
+      ]
+    },
+    {
+      "name": "Task",
+      "collection": "tasks",
+      "description": "Tarefas diárias e itens de planejamento do estudante",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID da tarefa"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "title", "type": "string", "description": "Título da tarefa"},
+        {"name": "description", "type": "string", "description": "Descrição adicional"},
+        {"name": "dueDate", "type": "string", "description": "Data limite YYYY-MM-DD"},
+        {"name": "completed", "type": "boolean", "description": "Status de conclusão"},
+        {"name": "category", "type": "string", "description": "study, revision, exercise, essay"},
+        {"name": "createdAt", "type": "string", "description": "Timestamp de criação ISO"}
+      ]
+    },
+    {
+      "name": "DiagnosticAttempt",
+      "collection": "diagnosticAttempts",
+      "description": "Tentativa de prova diagnóstica do estudante com respostas e resultados computados",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID da tentativa diagnóstica"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "status", "type": "string", "description": "not_started, in_progress, completed"},
+        {"name": "startedAt", "type": "string", "description": "Timestamp ISO de início"},
+        {"name": "completedAt", "type": "string", "description": "Timestamp ISO de conclusão"},
+        {"name": "currentQuestionIndex", "type": "number", "description": "Índice da questão em andamento"},
+        {"name": "answers", "type": "object", "description": "Mapa questionId -> { selectedOptionId, answeredAt, timeSpentSeconds }"},
+        {"name": "results", "type": "object", "description": "Métricas calculadas: overallScore, areaScores, attentionPoints, strongPoints"}
+      ]
+    },
+    {
+      "name": "UserPerformanceArea",
+      "collection": "userPerformanceAreas",
+      "description": "Métricas agregadas de desempenho por área do conhecimento (CH, CN, LC, MT)",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID composto userId_areaId"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "areaId", "type": "string", "description": "CH, CN, LC, MT"},
+        {"name": "areaName", "type": "string", "description": "Nome legível da área"},
+        {"name": "totalAnswered", "type": "number", "description": "Total de questões respondidas"},
+        {"name": "totalCorrect", "type": "number", "description": "Total de acertos"},
+        {"name": "masteryIndex", "type": "number", "description": "Índice de domínio 0-100"},
+        {"name": "classification", "type": "string", "description": "attention, developing, mastered, insufficient"},
+        {"name": "source", "type": "string", "description": "diagnostic, practice"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO"}
+      ]
+    },
+    {
+      "name": "UserPerformanceTopic",
+      "collection": "userPerformanceTopics",
+      "description": "Métricas agregadas de desempenho por tópico específico",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID do registro"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "areaId", "type": "string", "description": "CH, CN, LC, MT"},
+        {"name": "subject", "type": "string", "description": "Disciplina específica"},
+        {"name": "topic", "type": "string", "description": "Assunto avaliado"},
+        {"name": "totalAnswered", "type": "number", "description": "Total respondido"},
+        {"name": "totalCorrect", "type": "number", "description": "Total de acertos"},
+        {"name": "masteryIndex", "type": "number", "description": "Índice de domínio 0-100"},
+        {"name": "classification", "type": "string", "description": "attention, developing, mastered, insufficient"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO"}
+      ]
+    },
+    {
+      "name": "PerformanceSnapshot",
+      "collection": "performanceSnapshots",
+      "description": "Fotografia histórica temporal de evolução do estudante",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID do snapshot"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "snapshotType", "type": "string", "description": "diagnostic, weekly"},
+        {"name": "overallMastery", "type": "number", "description": "Índice geral de domínio"},
+        {"name": "areaBreakdown", "type": "object", "description": "Mapa areaId -> masteryIndex"},
+        {"name": "createdAt", "type": "string", "description": "Timestamp ISO"}
+      ]
+    },
+    {
+      "name": "StudyPlan",
+      "collection": "studyPlans",
+      "description": "Plano de estudos personalizado sugerido ou ativo para o estudante",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID do plano"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "title", "type": "string", "description": "Título do plano"},
+        {"name": "status", "type": "string", "description": "suggested, active, archived"},
+        {"name": "dailyMinutes", "type": "number", "description": "Carga horária diária selecionada"},
+        {"name": "preferredDays", "type": "array", "description": "Dias da semana ativos"},
+        {"name": "priorityArea", "type": "string", "description": "Área de foco prioritário"},
+        {"name": "secondaryArea", "type": "string", "description": "Área secundária de reforço"},
+        {"name": "focusAreas", "type": "array", "description": "Lista de áreas priorizadas"},
+        {"name": "itemsCount", "type": "number", "description": "Quantidade de atividades geradas"},
+        {"name": "createdAt", "type": "string", "description": "Timestamp ISO"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO"}
+      ]
+    },
+    {
+      "name": "Admin",
+      "collection": "admins",
+      "description": "Registro de autorização administrativa validado no backend",
+      "fields": [
+        {"name": "id", "type": "string", "description": "UID do administrador"},
+        {"name": "email", "type": "string", "description": "E-mail do administrador"},
+        {"name": "role", "type": "string", "description": "Papel fixo: admin"},
+        {"name": "grantedAt", "type": "string", "description": "Timestamp ISO da concessão"},
+        {"name": "grantedBy", "type": "string", "description": "Identificador da concessão"}
+      ]
+    },
+    {
+      "name": "UserFavorite",
+      "collection": "userFavorites",
+      "description": "Questões salvas e favoritadas pelo estudante (idempotente fav_{userId}_{questionId})",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID composto fav_{userId}_{questionId}"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "questionId", "type": "string", "description": "ID da questão favoritada"},
+        {"name": "favoritedAt", "type": "string", "description": "Timestamp ISO da inclusão nos favoritos"}
+      ]
+    },
+    {
+      "name": "UserQuestionReview",
+      "collection": "userQuestionReviews",
+      "description": "Estado de revisão pedagógica de questões do caderno de erros pelo estudante",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID composto review_{userId}_{questionId}"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "questionId", "type": "string", "description": "ID da questão revisada"},
+        {"name": "status", "type": "string", "description": "not_reviewed ou reviewed"},
+        {"name": "lastAttemptCorrect", "type": "boolean", "description": "Se a última tentativa foi correta"},
+        {"name": "reviewedAt", "type": "string", "description": "Timestamp ISO em que foi marcada como revisada"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO de atualização"}
+      ]
+    },
+    {
+      "name": "Simulation",
+      "collection": "simulations",
+      "description": "Definições e configurações de provas e simulados do ENEM",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID do simulado"},
+        {"name": "title", "type": "string", "description": "Título oficial do simulado"},
+        {"name": "description", "type": "string", "description": "Descrição e orientações gerais"},
+        {"name": "type", "type": "string", "description": "full, area ou custom"},
+        {"name": "status", "type": "string", "description": "draft, published ou archived"},
+        {"name": "areaIds", "type": "array", "description": "Áreas contempladas no simulado"},
+        {"name": "questionIds", "type": "array", "description": "Identificadores das questões que compõem o simulado"},
+        {"name": "questionCount", "type": "number", "description": "Quantidade total de questões"},
+        {"name": "durationSeconds", "type": "number", "description": "Tempo total disponível em segundos"},
+        {"name": "allowResume", "type": "boolean", "description": "Permite retomar sessão em andamento"},
+        {"name": "shuffleQuestions", "type": "boolean", "description": "Embaralhar ordem das questões"},
+        {"name": "shuffleAlternatives", "type": "boolean", "description": "Embaralhar alternativas de resposta"},
+        {"name": "version", "type": "number", "description": "Versão do simulado"},
+        {"name": "sections", "type": "array", "description": "Seções e blocos do simulado (opcional)"},
+        {"name": "createdAt", "type": "string", "description": "Timestamp ISO de criação"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO de atualização"}
+      ]
+    },
+    {
+      "name": "SimulationSession",
+      "collection": "simulationSessions",
+      "description": "Sessão individual de realização de simulado pelo estudante",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID único da sessão"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "simulationId", "type": "string", "description": "ID do simulado executado"},
+        {"name": "status", "type": "string", "description": "not_started, in_progress, completed, abandoned, expired"},
+        {"name": "currentQuestionIndex", "type": "number", "description": "Índice da questão atual do estudante"},
+        {"name": "totalQuestions", "type": "number", "description": "Total de questões na prova"},
+        {"name": "answeredQuestions", "type": "number", "description": "Total de questões já respondidas"},
+        {"name": "startedAt", "type": "string", "description": "Timestamp ISO de início da sessão"},
+        {"name": "lastSavedAt", "type": "string", "description": "Timestamp ISO do último salvamento automático"},
+        {"name": "completedAt", "type": "string", "description": "Timestamp ISO de conclusão ou encerramento"},
+        {"name": "expiresAt", "type": "string", "description": "Timestamp ISO limite da sessão com tempo"},
+        {"name": "createdAt", "type": "string", "description": "Timestamp ISO de criação"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO de atualização"}
+      ]
+    },
+    {
+      "name": "SimulationAnswer",
+      "collection": "simulationSessions/{sessionId}/answers",
+      "description": "Respostas individuais persistidas na subcoleção de cada questão do simulado",
+      "fields": [
+        {"name": "questionId", "type": "string", "description": "ID da questão respondida"},
+        {"name": "selectedAnswer", "type": "string", "description": "Alternativa selecionada pelo estudante"},
+        {"name": "answered", "type": "boolean", "description": "Se foi efetivamente respondida"},
+        {"name": "markedForReview", "type": "boolean", "description": "Marcada para revisão pelo estudante"},
+        {"name": "timeSpentSeconds", "type": "number", "description": "Tempo decorrido na questão"},
+        {"name": "answeredAt", "type": "string", "description": "Timestamp ISO em que foi respondida"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO da última alteração da resposta"}
+      ]
+    },
+    {
+      "name": "SimulationResult",
+      "collection": "simulationResults",
+      "description": "Resultados e métricas brutas consolidadas da sessão de simulado do estudante",
+      "fields": [
+        {"name": "id", "type": "string", "description": "ID do resultado"},
+        {"name": "sessionId", "type": "string", "description": "ID da sessão avaliada"},
+        {"name": "userId", "type": "string", "description": "UID do estudante"},
+        {"name": "simulationId", "type": "string", "description": "ID do simulado"},
+        {"name": "totalQuestions", "type": "number", "description": "Total de questões avaliadas"},
+        {"name": "answeredQuestions", "type": "number", "description": "Total respondido"},
+        {"name": "correctAnswers", "type": "number", "description": "Total de acertos"},
+        {"name": "incorrectAnswers", "type": "number", "description": "Total de erros"},
+        {"name": "unansweredQuestions", "type": "number", "description": "Questões em branco"},
+        {"name": "percentage", "type": "number", "description": "Percentual bruto de acerto (0-100)"},
+        {"name": "totalTimeSeconds", "type": "number", "description": "Tempo total gasto"},
+        {"name": "averageTimeSeconds", "type": "number", "description": "Tempo médio por questão"},
+        {"name": "completedAt", "type": "string", "description": "Timestamp ISO da conclusão"},
+        {"name": "areaResults", "type": "array", "description": "Desempenho bruto segmentado por área do ENEM"}
+      ]
+    },
+    {
+      "name": "QuestionAnswerKey",
+      "collection": "questionAnswerKeys",
+      "description": "Gabarito restrito e resolução comentada protegida para correção segura de simulados",
+      "fields": [
+        {"name": "questionId", "type": "string", "description": "ID da questão"},
+        {"name": "correctOptionId", "type": "string", "description": "Gabarito oficial protegido"},
+        {"name": "explanation", "type": "string", "description": "Explicação detalhada da resolução"},
+        {"name": "solution", "type": "string", "description": "Passo a passo sintético"},
+        {"name": "updatedAt", "type": "string", "description": "Timestamp ISO de atualização"}
+      ]
+    }
+  ]
+}

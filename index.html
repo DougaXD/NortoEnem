@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Norto ENEM — Estude. Pratique. Evolua.</title>
+    <meta name="description" content="Plataforma digital de preparação para o ENEM — Estude. Pratique. Evolua." />
+    <meta property="og:title" content="Norto ENEM — Estude. Pratique. Evolua." />
+    <meta property="og:description" content="Plataforma digital de preparação para o ENEM — Estude. Pratique. Evolua." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Preconnect otimizado para o handshake do Google OAuth e Firebase -->
+    <link rel="preconnect" href="https://accounts.google.com" crossorigin />
+    <link rel="preconnect" href="https://apis.google.com" crossorigin />
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+    <link rel="dns-prefetch" href="https://accounts.google.com" />
+    <link rel="dns-prefetch" href="https://apis.google.com" />
+
+    <!-- PWA meta tags -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0B0F19" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Norto ENEM" />
+    <link rel="apple-touch-icon" href="/icon-192.svg" />
+    <link rel="icon" type="image/svg+xml" href="/icon-192.svg" />
+  </head>
+  <body class="bg-[#0B0F19] text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // 1. Limpeza imediata de qualquer cache diferente da versão atual
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          names.forEach((name) => {
+            if (name !== 'norto-enem-v3') {
+              caches.delete(name);
+            }
+          });
+        });
+      }
+
+      // 2. Registro do Service Worker com recarga automática ao ativar nova versão
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            reg.update();
+          }).catch((err) => {
+            console.warn('Service Worker registration skipped/failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
+
